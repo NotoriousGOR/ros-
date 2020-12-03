@@ -1,43 +1,57 @@
-import React from "react"
-import { Link, graphql } from "gatsby"
+import React from 'react'
+import { graphql, Link } from 'gatsby'
+import ProductList from '../components/ProductList'
+class Products extends React.Component {
+    render() {
+        const products = this.props.data.shopify.shop.products
 
-import Layout from "../components/layout"
+        return (
+            <div>
+                <h1>All Products</h1>
+                <ProductList products={products}
+                    style={{
+                        display: 'grid',
+                    }}
+                />
+            </div>
+        )
+    }
+}
 
-const ProductsPage = ({ data }) => (
-  <Layout>
-    <h1>Products</h1>
-    <ul>
-      {data.allShopifyProduct.edges.map(({ node }) => (
-        <li key={node.shopifyId}>
-          <h3>
-            <Link to={`/product/${node.handle}`}>{node.title}</Link>
-            {" - "}${node.priceRange.minVariantPrice.amount}
-          </h3>
-          <p>{node.description}</p>
-        </li>
-      ))}
-    </ul>
-  </Layout>
-)
-
-export default ProductsPage
+export default Products
 
 export const query = graphql`
-  {
-    allShopifyProduct(sort: { fields: [title] }) {
-      edges {
-        node {
-          title
-          shopifyId
-          description
-          handle
-          priceRange {
-            minVariantPrice {
-              amount
+query productsQuery {
+    shopify {
+        shop {
+            products(first: 20) {
+                edges {
+                    node {
+                        id
+                        handle
+                        title
+                        priceRange {
+                            minVariantPrice {
+                                currencyCode
+                                amount
+                            }
+                        }
+                        images(first: 2) {
+                            edges {
+                                node {
+                                    originalSrc
+                                    altText
+                                }
+                            }
+                        }
+                    }
+                }
+                pageInfo {
+                    hasNextPage
+                    hasPreviousPage
+                }
             }
-          }
         }
-      }
     }
-  }
+}
 `

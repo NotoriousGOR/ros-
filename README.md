@@ -1,126 +1,107 @@
-# Gatsby + Netlify CMS Starter
+# Bodega Cloud
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/b654c94e-08a6-4b79-b443-7837581b1d8d/deploy-status)](https://app.netlify.com/sites/gatsby-starter-netlify-cms-ci/deploys)
+A Gatsby Shopify starter
 
-**Note:** This starter uses [Gatsby v2](https://www.gatsbyjs.org/blog/2018-09-17-gatsby-v2/).
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
-This repo contains an example business website that is built with [Gatsby](https://www.gatsbyjs.org/), and [Netlify CMS](https://www.netlifycms.org): **[Demo Link](https://gatsby-netlify-cms.netlify.com/)**.
+[![Edit gatsby-starter-shopify](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/98rxxwxj1w)
 
-It follows the [JAMstack architecture](https://jamstack.org) by using Git as a single source of truth, and [Netlify](https://www.netlify.com) for continuous deployment, and CDN distribution.
+## Bodega Cloud powered by Gatsby, Netlify, & Shopify
 
-## Features
+This will be a POC Shopify PWA using the Storefront API & GatsbyJS.
 
-- A simple landing page with blog functionality built with Netlify CMS
-- Editable Pages: Landing, About, Product, Blog-Collection and Contact page with Netlify Form support
-- Create Blog posts from Netlify CMS
-- Tags: Separate page for posts under each tag
-- Basic directory organization
-- Uses Bulma for styling, but size is reduced by `purge-css-plugin`
-- Blazing fast loading times thanks to pre-rendered HTML and automatic chunk loading of JS files
-- Uses `gatsby-image` with Netlify-CMS preview support
-- Separate components for everything
-- Netlify deploy configuration
-- Netlify function support, see `lambda` folder
-- Perfect score on Lighthouse for SEO, Accessibility and Performance (wip:PWA)
-- ..and more
+## High Level Project Goals
 
-## Prerequisites
+### Speed
 
-- Node (I recommend using v8.2.0 or higher)
-- [Gatsby CLI](https://www.gatsbyjs.org/docs/)
-- [Netlify CLI](https://github.com/netlify/cli)
+Should be as fast but ideally, faster than a normal Shopify experience - especially for slower connection due to service worker.
 
-## Getting Started (Recommended)
+### Highly Customizable Theme and Settings
 
-Netlify CMS can run in any frontend web environment, but the quickest way to try it out is by running it on a pre-configured starter site with Netlify. The example here is the Kaldi coffee company template (adapted from [One Click Hugo CMS](https://github.com/netlify-templates/one-click-hugo-cms)). Use the button below to build and deploy your own copy of the repository:
+There should be a number of ways to customize the theme without touching the code such as colors, typography, and settings (show breadcrumbs?, etc.)
 
-<a href="https://app.netlify.com/start/deploy?repository=https://github.com/netlify-templates/gatsby-starter-netlify-cms&amp;stack=cms"><img src="https://www.netlify.com/img/deploy/button.svg" alt="Deploy to Netlify"></a>
+### Accessible
 
-After clicking that button, you’ll authenticate with GitHub and choose a repository name. Netlify will then automatically create a repository in your GitHub account with a copy of the files from the template. Next, it will build and deploy the new site on Netlify, bringing you to the site dashboard when the build is complete. Next, you’ll need to set up Netlify’s Identity service to authorize users to log in to the CMS.
+Out-of-box, the site should be WCAG 2.0 accessible. This means aria tags where needed, AA color contrast, and keyboard accessible navigation with focus styling. This includes things like the gallery.
 
-### Access Locally
+### Code Complete with regular Shopify themes
 
-Pulldown a local copy of the Github repository Netlify created for you, with the name you specified in the previous step
-```
-$ git clone https://github.com/[GITHUB_USERNAME]/[REPO_NAME].git
-$ cd [REPO_NAME]
-$ yarn
-$ netlify dev # or ntl dev
+Should strive to offer the same features as a normal Shopify theme such as easy homepage section content, all the normal content types. See [this list of issues](https://github.com/gil--/gatsby-starter-shopifypwa/issues/4) which might prevent code complete.
+
+## Install
+
+### ENV
+
+Copy .env.sample to .env.development and change the items to match your store. Make sure to add all .env keys and values in Netlify
+
+### Emails
+
+#### Customer Active
+
+When sending a customer an active email (invite email), the template utilizes a url pattern that does not currently work with Shopify PWA. To simplify setup, change the following items in the *Customer account invite* email notification template (**Settings > Notifications > Customer Account > Customer account invite** or https://YOUR_STORE_NAME.myshopify.com/admin/email_templates/customer_account_activate/edit):
+
+```diff
+-<td class="button__cell"><a href="{{ customer.account_activation_url }}" class="button__text">Activate your account</a></td>
++{% assign url_parts = customer.account_activation_url  | split: '/' %}
++<td class="button__cell"><a href="{{shop.url}}/account/activate?id={{url_parts[5]}}&token={{url_parts[6]}}" class="button__text">Activate your account</a></td>
 ```
 
-This uses the new [Netlify Dev](https://www.netlify.com/products/dev/?utm_source=blog&utm_medium=netlifycms&utm_campaign=devex) CLI feature to serve any functions you have in the `lambda` folder.
+#### Password Reset
 
-To test the CMS locally, you'll need to run a production build of the site:
+Shopify Password Resets urls do not currently work with the Storefront API and are also presented in a sturcture that requires custom Server-Side Routing. To simplify setup, change the following items in the *Customer account password reset* email notification template (**Settings > Notifications > Customer Account > Customer account password reset** or https://YOUR_STORE_NAME.myshopify.com/admin/email_templates/customer_account_reset/edit):
 
-```
-$ npm run build
-$ netlify dev # or ntl dev
-```
-
-### Media Libraries (installed, but optional)
-
-Media Libraries have been included in this starter as a default. If you are not planning to use `Uploadcare` or `Cloudinary` in your project, you **can** remove them from module import and registration in `src/cms/cms.js`. Here is an example of the lines to comment or remove them your project.
-
-```javascript
-import CMS from 'netlify-cms-app'
-// import uploadcare from 'netlify-cms-media-library-uploadcare'
-// import cloudinary from 'netlify-cms-media-library-cloudinary'
-
-import AboutPagePreview from './preview-templates/AboutPagePreview'
-import BlogPostPreview from './preview-templates/BlogPostPreview'
-import ProductPagePreview from './preview-templates/ProductPagePreview'
-import IndexPagePreview from './preview-templates/IndexPagePreview'
-
-// CMS.registerMediaLibrary(uploadcare);
-// CMS.registerMediaLibrary(cloudinary);
-
-CMS.registerPreviewTemplate('index', IndexPagePreview)
-CMS.registerPreviewTemplate('about', AboutPagePreview)
-CMS.registerPreviewTemplate('products', ProductPagePreview)
-CMS.registerPreviewTemplate('blog', BlogPostPreview)
+```diff
+-<td class="button__cell"><a href="{{customer.reset_password_url}}" class="button__text">Reset your password</a></td>
++{% assign url_parts = customer.reset_password_url  | split: '/' %}
++<td class="button__cell"><a href="{{shop.url}}/account/reset?id={{url_parts[5]}}&token={{url_parts[6]}}" class="button__text">Reset your password</a></td>
 ```
 
-Note: Don't forget to also remove them from `package.json` and `yarn.lock` / `package-lock.json` using `yarn` or `npm`. During the build netlify-cms-app will bundle the media libraries as well, having them removed will save you build time.
-Example:
-```
-yarn remove netlify-cms-media-library-uploadcare
-```
-OR
-```
-yarn remove netlify-cms-media-library-cloudinary
-```
-## Getting Started (Without Netlify)
+We're basically splitting the reset password url into URL parameters which will make it MUCH easier for Gatsby to understand.
 
-```
-$ gatsby new [SITE_DIRECTORY_NAME] https://github.com/netlify-templates/gatsby-starter-netlify-cms/
-$ cd [SITE_DIRECTORY_NAME]
-$ npm run build
-$ npm run serve
-```
+### Webhooks
 
-### Setting up the CMS
+Setup webhooks with Netlify to auto-deploy after product creation, update, and deletion.
 
-Follow the [Netlify CMS Quick Start Guide](https://www.netlifycms.org/docs/quick-start/#authentication) to set up authentication, and hosting.
+1. Got to https://app.netlify.com/sites/MY_NETLIFY_APP/settings/deploys
+2. Scroll down to **Build Hooks** and click the *Add build hook* button.
+3. Create a new Build Hook such as **Shopify Product Update**.
+4. Go to `https://YOUR_STORE_NAME.myshopify.com/admin/settings/notifications` and scroll down to Webhooks. Select **Create webhook** and for Event select *Product update* for example.
+5. For the URL, enter the one Netlify gave you in step 3.
+6. You can test the Webhook by clicking the **Send test notification** link and you should see a new build begin in Netlify.
+7. Repeat steps 1 through 6 for any additional Shopify Events that should trigger a new build.
 
-## Debugging
+## Deploy
 
-Windows users might encounter `node-gyp` errors when trying to npm install.
-To resolve, make sure that you have both Python 2.7 and the Visual C++ build environment installed.
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/gil--/gatsby-starter-shopifypwa)
 
-```
-npm config set python python2.7
-npm install --global --production windows-build-tools
-```
+### Instructions
 
-[Full details here](https://www.npmjs.com/package/node-gyp 'NPM node-gyp page')
+1. Have your Shopify store name (If it's https://shopifypwa.myshopify.com, the store name would be **shopifypwa**) and [access token ready](https://www.shopify.com/partners/blog/17056443-how-to-generate-a-shopify-api-token). Enter those as the environment variables after clicking the deploy button above.
+2. Enable Netlify Identity in order to enable the Admin CMS. Go to `https://app.netlify.com/sites/YOURAPPNAME/identity` and click **Enable Identity**.
 
-MacOS users might also encounter some errors, for more info check [node-gyp](https://github.com/nodejs/node-gyp). We recommend using the latest stable node version.
+## Features (WIP)
 
-## Purgecss
+The following are planned features. Many of these are not planned for the initial release.
 
-This plugin uses [gatsby-plugin-purgecss](https://www.gatsbyjs.org/packages/gatsby-plugin-purgecss/) and [bulma](https://bulma.io/). The bulma builds are usually ~170K but reduced 90% by purgecss.
-
-# CONTRIBUTING
-
-Contributions are always welcome, no matter how large or small. Before contributing,
-please read the [code of conduct](CODE_OF_CONDUCT.md).
+- ✅ Works Offline (Service Workers)
+- ✅ Registration & Logic
+- ✅ Shopify Product Pages
+- ✅ Shopify Collection Pages
+- [ ] Native-Like Homepage Sections
+- [ ] Page Builder (Easily Build CMS Pages & Category Landing Pages)
+- [ ] Theme Customizer (Colors, Typography, Basic Theme Features On/Off)
+- [ ] Excellent SEO
+- [ ] Rich-Media Cards (Twitter, Facebook)
+- [ ] OOB Analytics Support (GA Ecommerce, GTM)
+- [ ] WCAG AA Accessible
+- [ ] PWA Functionality (Offline, Notifications, Manifest)
+- [ ] Advanced Search (3rd Party Integration)
+- [ ] WebPayments API Support? Shopify Dynamic Checkout?
+- [ ] AR Product Support
+- [ ] Advance Related Products
+- [ ] 3rd Party Reviews Support
+- [ ] 3rd Party Chat Support
+- [ ] Mega Menu
+- [ ] Login/Registration (My Orders)
+- [ ] Order Status Lookup
+- [ ] FAQ Page Template (w/ Typeahead search)
