@@ -10,3 +10,4 @@ yarn-error.log
 # Environment Variables
 .env.development
 .env.production
+.env
